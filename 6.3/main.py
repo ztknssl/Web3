@@ -1,5 +1,4 @@
 from web3 import AsyncWeb3, AsyncHTTPProvider
-from web3.exceptions import Web3Exception
 from config import rpc_uri, wallets_list
 import asyncio
 from logger import logger
