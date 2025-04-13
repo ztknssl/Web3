@@ -1,4 +1,5 @@
 from web3 import AsyncWeb3, AsyncHTTPProvider
+from web3.exceptions import Web3Exception
 from config import rpc_uri, wallets_list
 import asyncio
 from logger import logger
@@ -14,9 +15,14 @@ w3 = AsyncWeb3(AsyncHTTPProvider(endpoint_uri=rpc_uri))
 
 """ Функция display_balance получает на вход адрес кошелька, преобразует его в checksum и выводит баланс в консоль """
 async def display_balance(wallet: str) -> None:
-    balance = await w3.eth.get_balance(w3.to_checksum_address(wallet))
-    eth_balance = w3.from_wei(balance, 'ether')
-    logger.info(f'Адрес: {wallet}, Баланс: {eth_balance} ETH')
+    try:
+        balance = await w3.eth.get_balance(w3.to_checksum_address(wallet))
+        eth_balance = w3.from_wei(balance, 'ether')
+        logger.info(f'Адрес: {wallet}, Баланс: {eth_balance} ETH')
+    except ValueError as e:
+        logger.error(f'Неверный адрес кошелька {wallet}: {str(e)}')
+    except Exception as e:
+        logger.error(f'Ошибка при получении баланса для {wallet}: {str(e)}')
 
 
 async def main():
@@ -32,7 +38,8 @@ async def main():
         await w3.provider.disconnect()
 
 
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())
 
 
 
