@@ -14,12 +14,6 @@ if sys.platform:
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 
-# Устанавливаем параметры для подключения
-request_kwargs = {
-    'timeout': 10
-}
-
-
 # Устанавливаем параметры для переподключения
 w3 = AsyncWeb3(AsyncHTTPProvider(
     endpoint_uri=rpc_uri,
