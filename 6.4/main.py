@@ -10,18 +10,9 @@ from logger import logger
 import sys
 
 
-if sys.platform:
+if sys.platform == 'win32':
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-
-# Тут, конечно, нужна регулярка для проверки прокси, а лучше отдельная функция валидации всех пользовательских вводов,
-# но в данном случае решил упростить проверку
-while True:
-    wallet = input('Введите Ethereum-адрес: ')
-    if len(wallet) == 42 and wallet.startswith('0x'):
-        break
-    else:
-        logger.error('Неверный формат адреса кошелька')
 
 while True:
     proxy = input('Введите URL прокси-сервера: ')
@@ -34,6 +25,7 @@ while True:
 # Устанавливаем параметры для переподключения
 w3 = AsyncWeb3(AsyncHTTPProvider(
     endpoint_uri=rpc_uri,
+    request_kwargs={"proxy": proxy},
     exception_retry_configuration=ExceptionRetryConfiguration(
         errors=(aiohttp.ClientError, asyncio.TimeoutError),
         retries=5,
@@ -43,7 +35,16 @@ w3 = AsyncWeb3(AsyncHTTPProvider(
 ))
 
 
-async def display_balance(address: str) -> None:
+while True:
+    wallet = input('Введите Ethereum-адрес: ')
+    if w3.is_address(wallet):
+        wallet = w3.to_checksum_address(wallet)
+        break
+    else:
+        logger.error('Неверный формат адреса кошелька')
+
+
+async def display_balance() -> None:
     """ Функция display_balance получает на вход адрес кошелька, преобразует в checksum и выводит баланс в консоль """
     try:
         balance = await w3.eth.get_balance(w3.to_checksum_address(wallet))
@@ -66,7 +67,7 @@ async def is_connected() -> None:
 async def main():
     try:
         await is_connected()
-        await display_balance(wallet)
+        await display_balance()
     except ConnectionError:
         logger.error('Ошибка подключения к сети Ethereum Mainnet')
     except ValueError as e:
