@@ -31,13 +31,6 @@ while True:
         logger.error('Неверный формат URL прокси-сервера')
 
 
-# Устанавливаем параметры для подключения
-request_kwargs = {
-    'proxy': proxy,
-    'timeout': 10
-}
-
-
 # Устанавливаем параметры для переподключения
 w3 = AsyncWeb3(AsyncHTTPProvider(
     endpoint_uri=rpc_uri,

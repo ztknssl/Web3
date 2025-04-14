@@ -1,6 +1,11 @@
 from web3 import AsyncWeb3, AsyncHTTPProvider
+from web3.providers.rpc.utils import (
+    REQUEST_RETRY_ALLOWLIST,
+    ExceptionRetryConfiguration,
+)
 from config import rpc_uri, wallets_list
 import asyncio
+import aiohttp
 from logger import logger
 import sys
 
@@ -9,7 +14,22 @@ if sys.platform:
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 
-w3 = AsyncWeb3(AsyncHTTPProvider(endpoint_uri=rpc_uri))
+# Устанавливаем параметры для подключения
+request_kwargs = {
+    'timeout': 10
+}
+
+
+# Устанавливаем параметры для переподключения
+w3 = AsyncWeb3(AsyncHTTPProvider(
+    endpoint_uri=rpc_uri,
+    exception_retry_configuration=ExceptionRetryConfiguration(
+        errors=(aiohttp.ClientError, asyncio.TimeoutError),
+        retries=5,
+        backoff_factor=0.125,
+        method_allowlist=REQUEST_RETRY_ALLOWLIST,
+    ),
+))
 
 
 """ Функция display_balance получает на вход адрес кошелька, преобразует его в checksum и выводит баланс в консоль """
