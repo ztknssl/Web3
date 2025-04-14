@@ -1,6 +1,11 @@
 from web3 import AsyncWeb3, AsyncHTTPProvider
+from web3.providers.rpc.utils import (
+    REQUEST_RETRY_ALLOWLIST,
+    ExceptionRetryConfiguration,
+)
 from config import rpc_uri
 import asyncio
+import aiohttp
 from logger import logger
 import sys
 
@@ -32,7 +37,17 @@ request_kwargs = {
     'timeout': 10
 }
 
-w3 = AsyncWeb3(AsyncHTTPProvider(endpoint_uri=rpc_uri, request_kwargs=request_kwargs))
+
+# Устанавливаем параметры для переподключения
+w3 = AsyncWeb3(AsyncHTTPProvider(
+    endpoint_uri=rpc_uri,
+    exception_retry_configuration=ExceptionRetryConfiguration(
+        errors=(aiohttp.ClientError, asyncio.TimeoutError),
+        retries=5,
+        backoff_factor=0.125,
+        method_allowlist=REQUEST_RETRY_ALLOWLIST,
+    ),
+))
 
 
 async def display_balance(address: str) -> None:
