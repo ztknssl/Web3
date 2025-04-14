@@ -31,7 +31,7 @@ async def display_balance(wallet: str) -> None:
     try:
         balance = await w3.eth.get_balance(w3.to_checksum_address(wallet))
         eth_balance = w3.from_wei(balance, 'ether')
-        logger.info(f'Адрес: {wallet}, Баланс: {eth_balance} ETH')
+        logger.info(f'Адрес: {wallet}, Баланс: {eth_balance:.6f} ETH')
     except ValueError as e:
         logger.error(f'Неверный адрес кошелька {wallet}: {str(e)}')
     except Exception as e:
